@@ -4,20 +4,18 @@ export const Card = ({ title, value, unit, isLast }) => {
   return (
     <div
       style={{ flex: "1" }}
-      className={`shadow-2 py1 px2 mr3 roundedMore bg-super-light-grey ${
-        !isLast ? "mr3" : ""
-      }`}
+      className={`shadow-2 py1 px2 roundedMore bg-super-light-grey darkgray`}
     >
-      <h5 className="h5 darkgray bold">{title}</h5>
-      <p className=" h3 darkgray">{value}</p>
-      <p className="h5 darkgray">{unit}</p>
+      <h5 className="h5 bold">{title}</h5>
+      <p className=" h3">{value}</p>
+      <p className="h5">{unit}</p>
     </div>
   );
 };
 
 export const CardContainer = ({ cards }) => {
   return (
-    <div className="flex" style={{ width: "100%" }}>
+    <div className="flex gap2">
       {cards.map((card, index) => {
         return (
           <Card
@@ -25,7 +23,7 @@ export const CardContainer = ({ cards }) => {
             title={card.title}
             value={card.value}
             unit={card.unit}
-            isLast={index === card.length - 1}
+            isLast={index === cards.length - 1}
           />
         );
       })}

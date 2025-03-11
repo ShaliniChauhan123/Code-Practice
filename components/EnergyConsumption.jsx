@@ -1,38 +1,32 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { renderChart } from "../utils/chart.js";
 import { groupByDay, sortByTime } from "../utils/reading";
 import { CardContainer } from "./CardContainer.jsx";
+import { getAnalytics } from "../utils/helper.js";
 
 export const EnergyConsumption = ({ readings }) => {
   const containerId = "usageChart";
-  const [mode, setMode] = useState("30days");
+  const [mode, setMode] = useState("days");
+
+  const { data, roundedCost, roundedConsumption, formattedFootprint } =
+    useMemo(() => {
+      const data =
+        mode === "days"
+          ? sortByTime(groupByDay(readings)).slice(-30)
+          : sortByTime(readings).slice(-24);
+      return { ...getAnalytics(data), data };
+    }, [mode]);
 
   useEffect(() => {
-    if (mode === "30days") {
-      renderChart(containerId, sortByTime(groupByDay(readings)).slice(-30));
-    } else {
-      renderChart(containerId, sortByTime(readings).slice(-24));
-    }
-  }, [mode]);
-
-  const totalConsumption = readings.reduce(
-    (sum, reading) => sum + reading.value,
-    0
-  );
-  const roundedConsumption = Math.round(totalConsumption);
-  const COST_PER_KWH = 0.138; // $0.138 per 1 kWh
-  const totalCost = totalConsumption * COST_PER_KWH;
-  const roundedCost = Math.round(totalCost);
-  const FOOTPRINT_PER_KWH = 0.0002532; // tonnes per 1kWh
-  const totalFootprint = totalConsumption * FOOTPRINT_PER_KWH;
-  const formattedFootprint = totalFootprint.toFixed(4);
+    renderChart(containerId, data, mode);
+  }, [data, mode]);
 
   const cards = [
     { title: "Cost", value: roundedCost, unit: "$" },
     { title: "Consumption", value: roundedConsumption, unit: "kWh" },
     { title: "Footprint", value: formattedFootprint, unit: "tonnes" },
   ];
-  console.log("cards", cards);
+
   return (
     <>
       <h1 className="regular darkgray line-height-1 mb3">Energy consumption</h1>
@@ -48,16 +42,15 @@ export const EnergyConsumption = ({ readings }) => {
               pb1
               roundedMore
              ${
-               mode === "30days" ? "bg-blue white" : "bg-white darkgrey"
-             } border-grey
-             
-             
+               mode === "days" ? "bg-normal" : "bg-white unclicked"
+             } border-grey 
               bold
+              pointer
+              mr2
+              white
+              shadow-2
             `}
-          style={{
-            cursor: "pointer",
-          }}
-          onClick={() => setMode("30days")}
+          onClick={() => setMode("days")}
         >
           Last 30 days
         </button>
@@ -73,14 +66,14 @@ export const EnergyConsumption = ({ readings }) => {
               roundedMore
               border-grey
               ${
-                mode === "24hours" ? "bg-blue white" : "bg-white darkgrey"
+                mode === "hours" ? "bg-normal" : "bg-white unclicked"
               } border-grey
               bold
+              pointer
+              white
+              shadow-2
             `}
-          style={{
-            cursor: "pointer",
-          }}
-          onClick={() => setMode("24hours")}
+          onClick={() => setMode("hours")}
         >
           Last 24 hours
         </button>
